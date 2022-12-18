@@ -10,10 +10,11 @@ __all__ = ['ResNeXt', 'resnet50', 'resnet101']
 
 
 def downsample_basic_block(x, planes, stride):
+    mps_device = torch.device("mps")
     out = F.avg_pool3d(x, kernel_size=1, stride=stride)
     zero_pads = torch.Tensor(
         out.size(0), planes - out.size(1), out.size(2), out.size(3),
-        out.size(4)).zero_()
+        out.size(4)).zero_().to(mps_device)
     if isinstance(out.data, torch.cuda.FloatTensor):
         zero_pads = zero_pads.cuda()
 
@@ -28,6 +29,12 @@ class ResNeXtBottleneck(nn.Module):
     def __init__(self, inplanes, planes, cardinality, stride=1,
                  downsample=None):
         super(ResNeXtBottleneck, self).__init__()
+        cpu_device = torch.device("cpu")
+        mps_device = torch.device("mps")
+
+        self.cpu_device = cpu_device
+        self.mps_device = mps_device
+
         mid_planes = cardinality * int(planes / 32)
         self.conv1 = nn.Conv3d(inplanes, mid_planes, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm3d(mid_planes)
@@ -48,21 +55,28 @@ class ResNeXtBottleneck(nn.Module):
         self.stride = stride
 
     def forward(self, x):
+        cpu_device = self.cpu_device
+        mps_device = self.mps_device
+
         residual = x
 
-        out = self.conv1(x)
+        # out = self.conv1(x)
+        out = self.conv1.to(cpu_device)(x.to(cpu_device)).to(mps_device)
         out = self.bn1(out)
         out = self.relu(out)
 
-        out = self.conv2(out)
+        # out = self.conv2(out)
+        out = self.conv2.to(cpu_device)(out.to(cpu_device)).to(mps_device)
         out = self.bn2(out)
         out = self.relu(out)
 
-        out = self.conv3(out)
+        # out = self.conv3(out)
+        out = self.conv3.to(cpu_device)(out.to(cpu_device)).to(mps_device)
         out = self.bn3(out)
 
         if self.downsample is not None:
-            residual = self.downsample(x)
+            # residual = self.downsample(x)
+            residual = self.downsample.to(cpu_device)(x.to(cpu_device)).to(mps_device)
 
         out += residual
         out = self.relu(out)
@@ -77,6 +91,12 @@ class ResNeXt(nn.Module):
                  layers,
                  shortcut_type='B',
                  cardinality=32):
+        cpu_device = torch.device("cpu")
+        mps_device = torch.device("mps")
+
+        self.cpu_device = cpu_device
+        self.mps_device = mps_device
+
         self.inplanes = 64
         super(ResNeXt, self).__init__()
         self.conv1 = nn.Conv3d(
@@ -144,10 +164,13 @@ class ResNeXt(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        x = self.conv1(x)
+        cpu_device = self.cpu_device
+        mps_device = self.mps_device
+
+        x = self.conv1.to(cpu_device)(x.to(cpu_device)).to(mps_device)
         x = self.bn1(x)
         x = self.relu(x)
-        x = self.maxpool(x)
+        x = self.maxpool.to(cpu_device)(x.to(cpu_device)).to(mps_device)
 
         x = self.layer1(x)
         x = self.layer2(x)

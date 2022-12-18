@@ -36,7 +36,7 @@ def parse_args():
         "--cfg",
         dest="cfg_file",
         help="Path to the config file",
-        default="cfg/ava.yaml",
+        default="cfg/jhmdb.yaml",
         type=str,
     )
     parser.add_argument(

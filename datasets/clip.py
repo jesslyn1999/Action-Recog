@@ -8,6 +8,7 @@ import numpy as np
 from core.utils import *
 from typing import Tuple, Union, Any
 import cv2 as _cv
+from pathlib import Path as _Path
 
 
 
@@ -143,16 +144,24 @@ def load_data_detection(base_path, imgpath, train, train_dur, sampling_rate, sha
     # clip loading and  data augmentation
 
     im_split = imgpath.split('/')
+
     num_parts = len(im_split)
     im_ind = int(im_split[num_parts-1][0:5])
-    labpath = os.path.join(base_path, 'labels', im_split[0], im_split[1] ,'{:05d}.txt'.format(im_ind))
 
-    img_folder = os.path.join(base_path, 'rgb-images', im_split[0], im_split[1])
+    labpath = os.path.join(base_path, 'labels', im_split[-3], im_split[-2] ,'{:05d}.txt'.format(im_ind))
+
+    if True:
+        labpath = ""
+
+    img_folder = os.path.join(base_path, 'rgb-images', im_split[-3], im_split[-2])
+
     if dataset_use == 'ucf24':
         max_num = len(os.listdir(img_folder))
     elif dataset_use == 'jhmdb21':
-        max_num = len(os.listdir(img_folder)) - 1
+        max_num = len(os.listdir(img_folder))
     elif dataset_use == 'random':
+        labpath = os.path.join(base_path, 'labels', im_split[-2] ,'{:05d}.txt'.format(im_ind))
+        img_folder = os.path.join(base_path, 'rgb-images', im_split[-2])
         max_num = len(os.listdir(img_folder))
 
     clip = []
@@ -173,11 +182,11 @@ def load_data_detection(base_path, imgpath, train, train_dur, sampling_rate, sha
             i_temp = max_num
 
         if dataset_use == 'ucf24':
-            path_tmp = os.path.join(base_path, 'rgb-images', im_split[0], im_split[1] ,'{:05d}.jpg'.format(i_temp))
+            path_tmp = os.path.join(base_path, 'rgb-images', im_split[-3], im_split[-2] ,'{:05d}.jpg'.format(i_temp))
         elif dataset_use == 'jhmdb21':
-            path_tmp = os.path.join(base_path, 'rgb-images', im_split[0], im_split[1] ,'{:05d}.png'.format(i_temp))
+            path_tmp = os.path.join(base_path, 'rgb-images', im_split[-3], im_split[-2] ,'{:05d}.png'.format(i_temp))
         elif dataset_use == 'random':
-            path_tmp = os.path.join(base_path, 'rgb-images', im_split[0], '{:05d}.jpg'.format(i_temp))
+            path_tmp = os.path.join(base_path, 'rgb-images', im_split[-2], '{:05d}.jpg'.format(i_temp))
             # img_path = {…}/random/rgb-images/title/00001.jpeg
 
         clip.append(Image.open(path_tmp).convert('RGB'))
@@ -205,9 +214,13 @@ def load_data_detection(base_path, imgpath, train, train_dur, sampling_rate, sha
     if train:
         return clip, label
     elif dataset_use == 'random':
-        return  im_split[0] + '_' + im_split[1], clip, label
+        frame_idx = os.path.join(im_split[-2], _Path(im_split[-1]).stem + '.txt')
+        base_folder = os.path.join(base_path, 'det_labels')
+        return base_folder, frame_idx, clip, label
     else:
-        return im_split[0] + '_' +im_split[1] + '_' + im_split[2], clip, label
+        frame_idx = os.path.join(im_split[-3], im_split[-2], _Path(im_split[-1]).stem + '.txt')
+        base_folder = os.path.join(base_path, 'det_labels')
+        return base_folder, frame_idx, clip, label
 
 
 def load_data_detection_test(root, imgpath, train_dur, num_samples):
@@ -220,7 +233,7 @@ def load_data_detection_test(root, imgpath, train_dur, num_samples):
 def load_system_data(
         video_path: str, key_frame_idx: int, train_dur: int,
         sampling_rate: int, label_path: str = None
-) -> Tuple[list[Image.Image], Union[torch.Tensor, Any], Image.Image]:
+): # -> Tuple[list[Image.Image], Union[torch.Tensor, Any], Image.Image]
     """
     only for testing or system usage, not for training
     key_frame_idx: range 0...len frames of video(exclusive)

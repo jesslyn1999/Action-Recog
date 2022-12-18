@@ -536,7 +536,7 @@ _C.BENCHMARK.SHUFFLE = True
 _C.DATA_LOADER = CfgNode()
 
 # Number of data loader workers per training process.
-_C.DATA_LOADER.NUM_WORKERS = 8
+_C.DATA_LOADER.NUM_WORKERS = 1
 
 # Load data to pinned host memory.
 _C.DATA_LOADER.PIN_MEMORY = True
@@ -654,14 +654,10 @@ _C.AVA.IMG_PROC_BACKEND = "cv2"
 # -----------------------------------------------------------------------------
 _C.LISTDATA = CfgNode()
 
-# _C.LISTDATA.BASE_PTH = "/usr/home/sut/datasets/ucf24"
-# _C.LISTDATA.TRAIN_FILE = "/usr/home/sut/datasets/ucf24/trainlist.txt"
-# _C.LISTDATA.TEST_FILE = "/usr/home/sut/datasets/ucf24/testlist.txt"
-# _C.LISTDATA.TEST_VIDEO_FILE = "/usr/home/sut/datasets/ucf24/testlist_video.txt"
-
-
-_C.LISTDATA.BASE_PTH = "/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/random"
-_C.LISTDATA.TEST_FILE = "/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/random/splitfiles/video-list.txt"
+_C.LISTDATA.BASE_PTH = "/usr/home/sut/datasets/ucf24"
+_C.LISTDATA.TRAIN_FILE = "/usr/home/sut/datasets/ucf24/trainlist.txt"
+_C.LISTDATA.TEST_FILE = "/usr/home/sut/datasets/ucf24/testlist.txt"
+_C.LISTDATA.TEST_VIDEO_FILE = "/usr/home/sut/datasets/ucf24/testlist_video.txt"
 
 
 _C.LISTDATA.MAX_OBJS = 6

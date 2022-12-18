@@ -17,11 +17,13 @@ class YOWO(nn.Module):
 
     def __init__(self, cfg):
         super(YOWO, self).__init__()
+        mps_device = torch.device("mps")
+        cpu_device = torch.device("cpu")
         self.cfg = cfg
         
         ##### 2D Backbone #####
         if cfg.MODEL.BACKBONE_2D == "darknet":
-            self.backbone_2d = darknet.Darknet("cfg/yolo.cfg")
+            self.backbone_2d = darknet.Darknet("cfg/yolo.cfg").to(mps_device)
             num_ch_2d = 425 # Number of output channels for backbone_2d
         else:
             raise ValueError("Wrong backbone_2d model is requested. Please select\
@@ -58,9 +60,12 @@ class YOWO(nn.Module):
             raise ValueError("Wrong backbone_3d model is requested. Please select it from [resnext101, resnet101, \
                              resnet50, resnet18, mobilenet_2x, mobilenetv2_1x, shufflenet_2x, shufflenetv2_2x]")
         if cfg.WEIGHTS.BACKBONE_3D:# load pretrained weights on Kinetics-600 dataset
-            self.backbone_3d = self.backbone_3d.cuda()
+            # self.backbone_3d = self.backbone_3d.cuda()
+            self.backbone_3d = self.backbone_3d.to(mps_device)
+            # self.backbone_3d = self.backbone_3d.to(cpu_device)
             self.backbone_3d = nn.DataParallel(self.backbone_3d, device_ids=None) # Because the pretrained backbone models are saved in Dataparalled mode
-            pretrained_3d_backbone = torch.load(cfg.WEIGHTS.BACKBONE_3D)
+            # pretrained_3d_backbone = torch.load(cfg.WEIGHTS.BACKBONE_3D, map_location=mps_device)
+            pretrained_3d_backbone = torch.load(cfg.WEIGHTS.BACKBONE_3D, map_location=mps_device)
             backbone_3d_dict = self.backbone_3d.state_dict()
             pretrained_3d_backbone_dict = {k: v for k, v in pretrained_3d_backbone['state_dict'].items() if k in backbone_3d_dict} # 1. filter out unnecessary keys
             backbone_3d_dict.update(pretrained_3d_backbone_dict) # 2. overwrite entries in the existing state dict

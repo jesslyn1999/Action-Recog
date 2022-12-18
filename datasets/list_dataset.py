@@ -81,15 +81,22 @@ class UCF_JHMDB_Dataset(Dataset):
             return (frame_idx, clip, label)
 
 
-class Random_Dataset(Dataset):
+class Random_UCF_JHMDB_Dataset(Dataset):
 
     # clip duration = 8, i.e, for each time 8 frames are considered together
     def __init__(self, base, root, dataset='random', shape=None,
                  transform=None, target_transform=None, 
                  train=False, clip_duration=16, sampling_rate=1):
-        with open(root, 'r') as file:
-            self.lines = file.readlines()
 
+        with open(root, 'r') as file:
+            video_lines = file.read().splitlines() 
+            self.lines = []
+            for video_dir in (video_lines):
+                image_files = sorted(glob.glob(os.path.join(base, 'rgb-images', video_dir, '*')))
+                self.lines += image_files
+        
+        print("length of lines", len(self.lines))
+                
         self.base_path = base
         self.dataset = dataset
         self.nSamples  = len(self.lines)
@@ -115,8 +122,8 @@ class Random_Dataset(Dataset):
 
             clip, label = load_data_detection(self.base_path, imgpath,  self.train, self.clip_duration, self.sampling_rate, self.shape, self.dataset, jitter, hue, saturation, exposure)
 
-        else: # For Testing
-            frame_idx, clip, label = load_data_detection(self.base_path, imgpath, False, self.clip_duration, self.sampling_rate, self.shape, self.dataset)
+        else:
+            base_det_folder, frame_idx, clip, label = load_data_detection(self.base_path, imgpath, False, self.clip_duration, self.sampling_rate, self.shape, self.dataset)
             clip = [img.resize(self.shape) for img in clip]
 
         if self.transform is not None:
@@ -131,7 +138,7 @@ class Random_Dataset(Dataset):
         if self.train:
             return (clip, label)
         else:
-            return (frame_idx, clip, label)
+            return (base_det_folder, frame_idx, clip, label)
 
 
 class SystemDataset(Dataset):

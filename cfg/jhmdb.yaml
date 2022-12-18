@@ -1,5 +1,5 @@
 TRAIN:
-  RESUME_PATH: "/usr/home/sut/YOWO/backup/jhmdb/yowo_jhmdb21_32f_best.pth"
+  RESUME_PATH: "/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/action-recog-localization-system/weights/yowo_jhmdb-21_16f_best.pth"
   DATASET: jhmdb21  # `ava`, `ucf24` or `jhmdb21`
   BATCH_SIZE: 6
   TOTAL_BATCH_SIZE: 128
@@ -20,7 +20,7 @@ SOLVER:
   CLASS_SCALE: 1
   COORD_SCALE: 1
 DATA:
-  NUM_FRAMES: 32
+  NUM_FRAMES: 16
   SAMPLING_RATE: 1
   TRAIN_JITTER_SCALES: [256, 320]
   TRAIN_CROP_SIZE: 224
@@ -37,10 +37,14 @@ WEIGHTS:
   FREEZE_BACKBONE_3D: True
   FREEZE_BACKBONE_2D: True
 LISTDATA:
-  BASE_PTH: "/usr/home/sut/Tim-Documents/jhmdb/data/jhmdb"
+  # BASE_PTH: "/usr/home/sut/Tim-Documents/jhmdb/data/jhmdb"
   TRAIN_FILE: "/usr/home/sut/Tim-Documents/jhmdb/data/jhmdb/trainlist.txt"
-  TEST_FILE: "/usr/home/sut/Tim-Documents/jhmdb/data/jhmdb/testlist.txt"
+  # TEST_FILE: "/usr/home/sut/Tim-Documents/jhmdb/data/jhmdb/testlist.txt"
   TEST_VIDEO_FILE: "/data1/jhmdb/testlist_video.txt"
+
+  BASE_PTH: "/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/jhmdb21"
+  TEST_FILE: "/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/jhmdb21/splitfiles/testlist_video.txt"
+
   MAX_OBJS: 1
   CLASS_NAMES: [
     "brush_hair", "catch", "clap", "climb_stairs", "golf", 

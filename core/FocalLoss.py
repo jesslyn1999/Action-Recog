@@ -52,10 +52,12 @@ class FocalLoss(nn.Module):
         ids = targets.view(-1, 1)
         class_mask.scatter_(1, ids, 1.)
         #print(class_mask)
-        
+        mps_device = torch.device("mps")
 
         if inputs.is_cuda and not self.alpha.is_cuda:
             self.alpha = self.alpha.cuda()
+        self.alpha = self.alpha.to(mps_device)
+        
         alpha = self.alpha[ids.data.view(-1)]
         
         probs = (P*class_mask).sum(1).view(-1,1)
