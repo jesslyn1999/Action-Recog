@@ -1,7 +1,8 @@
 import glob
 import os
+import shutil
 
-def main():
+def filter_video_to_process():
     # suffixes = [
     #     "_g01_c01",
     #     "_g02_c05",
@@ -44,6 +45,35 @@ def main():
         for line in result_lines:
             f.write(f"{line}\n")
 
+
+def generate_filtered_gt_folder(testlist_video_path, gt_folder, output_gt_folder):
+    os.chdir(gt_folder)
+    gt_files = glob.glob("*.txt")
+    gt_files.sort()
+    gt_file_prefixes = [file.rsplit("_", 1)[0] for file in gt_files]
+    with open(testlist_video_path, 'r') as file:
+        video_lines = file.read().splitlines()
+        video_lines = sorted([line.replace("/", "_") for line in video_lines])
+
+    filtered_gt_files = []
+    
+    for gt_file, gt_file_prefix in zip(gt_files, gt_file_prefixes):
+        if gt_file_prefix in video_lines:
+            filtered_gt_files.append(gt_file)
+
+    for gt_file in filtered_gt_files:
+        src = os.path.join(gt_folder, gt_file)
+        dst = output_gt_folder
+        shutil.copy(src, dst)
+
+
 if __name__ == '__main__':
-    main()
+    # filter_video_to_process()
+    generate_filtered_gt_folder(
+        '/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/ucf24/splitfiles/testlist_video.txt',
+        '/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/ucf24/groundtruths_complete',
+        '/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/ucf24/groundtruths'
+    )
+    pass
+
 

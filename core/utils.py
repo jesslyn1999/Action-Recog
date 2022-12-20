@@ -8,6 +8,8 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from torch.autograd import Variable
 
+from pathlib import Path
+
 import struct # get_image_size
 import imghdr # get_image_size
 
@@ -69,10 +71,10 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
         w2 = box2[2] - box2[0]
         h2 = box2[3] - box2[1]
     else:
-        mx = min(float(box1[0]-box1[2]/2.0), float(box2[0]-box2[2]/2.0))
-        Mx = max(float(box1[0]+box1[2]/2.0), float(box2[0]+box2[2]/2.0))
-        my = min(float(box1[1]-box1[3]/2.0), float(box2[1]-box2[3]/2.0))
-        My = max(float(box1[1]+box1[3]/2.0), float(box2[1]+box2[3]/2.0))
+        mx = min(float(box1[0] - box1[2] / 2.0), float(box2[0] - box2[2] / 2.0))
+        Mx = max(float(box1[0] + box1[2] / 2.0), float(box2[0] + box2[2] / 2.0))
+        my = min(float(box1[1] - box1[3] / 2.0), float(box2[1] - box2[3] / 2.0))
+        My = max(float(box1[1] + box1[3] / 2.0), float(box2[1] + box2[3] / 2.0))
         w1 = box1[2]
         h1 = box1[3]
         w2 = box2[2]
@@ -82,9 +84,12 @@ def bbox_iou(box1, box2, x1y1x2y2=True):
     cw = w1 + w2 - uw
     ch = h1 + h2 - uh
     carea = 0
+    # print("here: ", w1, w2, h1, h2)
+    # print(Mx, mx, My, my)
+    # print(cw, ch)
     if cw <= 0 or ch <= 0:
         return 0.0
-
+    # print("here2")
     area1 = w1 * h1
     area2 = w2 * h2
     carea = cw * ch
@@ -797,3 +802,6 @@ def count_frames(cap: _cv.VideoCapture) -> int:
     except _cv.error as error:
         raise Exception('count_frames error: {}'.format(error))
     return n_frames
+
+def mkdir(output_folder: str):
+    Path(output_folder).mkdir(parents=True, exist_ok=True)

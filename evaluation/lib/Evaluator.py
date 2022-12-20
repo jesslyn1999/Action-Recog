@@ -75,6 +75,7 @@ class Evaluator:
             # get class
             if bb.getClassId() not in classes:
                 classes.append(bb.getClassId())
+
         classes = sorted(classes)
         # Precision x Recall is obtained individually by each class
         # Loop through by classes

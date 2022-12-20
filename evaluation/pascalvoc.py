@@ -18,10 +18,24 @@ import shutil
 import sys
 
 import _init_paths
-from evaluation.lib import BoundingBox, BoundingBoxes
-from evaluation.lib.Evaluator import *
-from evaluation.lib.utils import BBFormat
+from lib import BoundingBox, BoundingBoxes
+from lib.Evaluator import *
+from lib.utils import BBFormat
 
+
+DATASET = 'ucf24' # random, ucf24, or jhmdb
+
+GT_FOLDERS = {
+    'jhmdb': '/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/jhmdb21/groundtruths',
+    'ucf24': '/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/ucf24/groundtruths'
+}
+
+DET_FOLDERS = {
+    # 'jhmdb': '/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/jhmdb21/det_labels',
+    # 'ucf24': '/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/ucf24/det_labels'
+    'jhmdb': '/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/jhmdb21/filtered_det_labels',
+    'ucf24': '/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/ucf24/filtered_det_labels'
+}
 
 # Validate formats
 def ValidateFormats(argFormat, argName, errors):
@@ -102,7 +116,7 @@ def getBoundingBoxes(directory,
         allClasses = []
     # Read ground truths
     os.chdir(directory)
-    files = glob.glob("*.txt")
+    files = glob.glob("**/*.txt", recursive=True)
     files.sort()
     # Read GT detections from txt file
     # Each line of the files in the groundtruths folder represents a ground truth bounding box
@@ -113,6 +127,8 @@ def getBoundingBoxes(directory,
     # x2, y2 represents the most bottom-right coordinates of the bounding box
     for f in files:
         nameOfImage = f.replace(".txt", "")
+        if not isGT:
+            nameOfImage = nameOfImage.replace("/", "_")
         fh1 = open(f, "r")
         for line in fh1:
             line = line.replace("\n", "")
@@ -139,15 +155,15 @@ def getBoundingBoxes(directory,
                     format=bbFormat)
             else:
                 # idClass = int(splitLine[0]) #class
-                idClass = (splitLine[0])  # class
-                confidence = float(splitLine[1])
-                x = float(splitLine[2])
-                y = float(splitLine[3])
-                w = float(splitLine[4])
-                h = float(splitLine[5])
+                idClass = (splitLine[6])  # class
+                confidence = float(splitLine[4]) * float(splitLine[5])
+                x = float(splitLine[0])
+                y = float(splitLine[1])
+                w = float(splitLine[2])
+                h = float(splitLine[3])
                 bb = BoundingBox(
                     nameOfImage,
-                    idClass,
+                    str(int(idClass) + 1),  # Add 1 due to the prediction class_id started from 0
                     x,
                     y,
                     w,
@@ -183,16 +199,14 @@ parser.add_argument(
     '-gt',
     '--gtfolder',
     dest='gtFolder',
-    default='/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/jhmdb21/groundtruths',
-    # default='/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/ucf24/groundtruths',
+    default=GT_FOLDERS[DATASET],
     metavar='',
     help='folder containing your ground truth bounding boxes')
 parser.add_argument(
     '-det',
     '--detfolder',
     dest='detFolder',
-    default='/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/jhmdb21/det_labels',
-    # default='/Users/jesslyn1999/Documents/master/lectures/人工智能技术前沿与产业应用/big_project/data/ucf24/det_labels',
+    default=DET_FOLDERS[DATASET],
     metavar='',
     help='folder containing your detected bounding boxes')
 # Optional
@@ -245,6 +259,7 @@ parser.add_argument(
     '-np',
     '--noplot',
     dest='showPlot',
+    default=False,
     action='store_false',
     help='no plot is shown during execution')
 args = parser.parse_args()
@@ -283,10 +298,10 @@ else:
 if args.savePath is not None:
     savePath = ValidatePaths(args.savePath, '-sp/--savepath', errors)
 else:
-    savePath = os.path.join(currentPath, 'results')
+    savePath = os.path.join(currentPath, 'results_{}'.format(DATASET))
 # Validate savePath
 # If error, show error messages
-if len(errors) is not 0:
+if len(errors) != 0:
     print("""usage: Object Detection Metrics [-h] [-v] [-gt] [-det] [-t] [-gtformat]
                                 [-detformat] [-save]""")
     print('Object Detection Metrics: error(s): ')
